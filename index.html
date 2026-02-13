@@ -1,109 +1,454 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Be My Valentine 💖</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Will you be my Valentine?</title>
 <style>
-    body {
-        margin: 0;
-        height: 100vh;
-        background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-    }
+  :root{
+    --bg1: #0f1022;
+    --bg2: #2b1a3a;
+    --accent: #e63e57;
+    --soft-white: #f8f6f4;
+  }
 
-    .heart-container {
-        text-align: center;
-        cursor: pointer;
-        position: relative;
-        z-index: 10;
-    }
+  /* reset */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg, var(--bg1) 0%, #2b1540 40%, #5f2b4d 100%);
+    color:var(--soft-white);
+    perspective: 1200px; /* for 3D hearts */
+    overflow-x: hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
 
-    .heart {
-        font-size: 100px;
-        animation: pulse 1.5s infinite;
-        transition: transform 0.3s ease;
-    }
+  /* Scene wrapper that holds all parallax content */
+  .scene {
+    position: relative;
+    width: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
 
-    .heart:hover {
-        transform: scale(1.1);
-    }
+  /* Tall scroll to give "scroll for a while" feel */
+  .spacer {
+    height: 260vh; /* long first section with floating content */
+    position: relative;
+  }
 
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.2); }
-        100% { transform: scale(1); }
-    }
+  /* layered background bands moving at different speeds */
+  .bg-layer {
+    position: absolute;
+    left:0; right:0;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    mix-blend-mode: screen;
+    filter: blur(8px) saturate(120%);
+    opacity: 0.18;
+    transform: translate3d(0,0,0);
+    pointer-events: none;
+  }
+  .bg-layer.l1{background: radial-gradient(ellipse at 30% 20%, rgba(255,138,165,0.12), transparent 10%),
+                         radial-gradient(ellipse at 70% 80%, rgba(254,214,201,0.06), transparent 10%);
+             top:0; bottom:0; z-index:0;}
+  .bg-layer.l2{background: linear-gradient(120deg, rgba(255,100,140,0.06), rgba(30,10,40,0.06));
+             top:10vh; bottom:10vh; z-index:0; opacity:0.14; filter: blur(12px);}
+  .bg-layer.l3{background-image:
+             radial-gradient(circle at 10% 20%, rgba(255,255,255,0.03) 0 2px, transparent 2px),
+             radial-gradient(circle at 80% 80%, rgba(255,255,255,0.02) 0 2px, transparent 2px);
+             top:0; bottom:0; z-index:0; opacity:0.08; filter: blur(1px);}
 
-    .explosion-img {
-        position: absolute;
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 15px;
-        opacity: 0;
-        transition: all 1s ease-out;
-    }
+  /* container for floating images + hearts */
+  .floating-stage {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    overflow: visible;
+  }
 
-    .message {
-        position: absolute;
-        bottom: 10%;
-        font-size: 40px;
-        color: white;
-        opacity: 0;
-        transition: opacity 2s ease;
-    }
+  /* photo cards */
+  .photo {
+    position: absolute;
+    width: clamp(120px, 12vw, 260px);
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+    transform-origin: center;
+    object-fit: cover;
+    transition: box-shadow .25s ease, transform .25s ease;
+    will-change: transform;
+    border: 3px solid rgba(255,255,255,0.04);
+  }
+  .photo:focus, .photo:hover{
+    box-shadow: 0 18px 40px rgba(0,0,0,0.65);
+    transform: translateZ(30px) rotateZ(-3deg) scale(1.02);
+  }
+
+  /* 3D heart container: each heart is made from stacked 'slices' */
+  .heart-3d {
+    position: absolute;
+    width: 56px;
+    height: 56px;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    pointer-events: none;
+  }
+
+  /* Single heart slice: this is the classic CSS heart shape (rotated square + two circles)
+     We will stack many of these (with slight translateZ) to create thickness */
+  .heart-slice{
+    position:absolute;
+    left:0; top:0;
+    width:56px; height:56px;
+    transform: rotate(45deg);
+    background: linear-gradient(180deg, #ff6b7a, #e32f4a);
+    border-radius:8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 -6px 12px rgba(255,255,255,0.06);
+  }
+  .heart-slice:before, .heart-slice:after{
+    content: "";
+    position: absolute;
+    width:56px; height:56px;
+    border-radius:50%;
+    background: inherit;
+    top: -28px; left: 0;
+  }
+  .heart-slice:after{
+    left: 28px; top: 0;
+  }
+
+  /* small subtle glint on front-most slice: we will mark slice[data-front="true"] */
+  .heart-slice[data-front="true"]{
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45), inset 0 -6px 18px rgba(255,255,255,0.08);
+  }
+  .heart-slice[data-front="true"]::after{
+    content: "";
+  }
+
+  /* final reveal section */
+  .reveal {
+    height: 120vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    position:relative;
+    z-index:4;
+  }
+  .reveal .card {
+    padding: clamp(24px, 4vw, 48px);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    border-radius: 18px;
+    backdrop-filter: blur(6px) saturate(150%);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    max-width: 900px;
+    width: calc(100% - 48px);
+  }
+  .message {
+    font-size: clamp(28px, 6vw, 64px);
+    line-height: 1.02;
+    color: var(--soft-white);
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 18px;
+  }
+  .sub {
+    color: rgba(248,246,244,0.85);
+    font-size: clamp(14px, 2.2vw, 20px);
+    margin-top: 12px;
+    opacity:0.95;
+  }
+
+  /* decorative subtle parallax text running in background (big) */
+  .ghost-title {
+    position: absolute;
+    left: 50%;
+    top: 20vh;
+    transform: translateX(-50%);
+    font-size: 200px;
+    opacity: 0.03;
+    white-space: nowrap;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .heart-3d, .photo { transition: none; animation: none; }
+  }
 </style>
 </head>
 <body>
+  <div class="scene" id="scene">
 
-<div class="heart-container" onclick="explode()">
-    <div class="heart">❤️</div>
-    <div>Click Here</div>
-</div>
+    <!-- subtle layered backgrounds that will move at different speeds -->
+    <div class="bg-layer l1" data-speed="0.06"></div>
+    <div class="bg-layer l2" data-speed="0.035"></div>
+    <div class="bg-layer l3" data-speed="0.012"></div>
 
-<div class="message" id="message">
-    Will You Be My Valentine? 💘
-</div>
+    <!-- main tall area with floating content -->
+    <div class="spacer">
+      <div class="floating-stage" id="stage" aria-hidden="true"></div>
+
+      <!-- decorative very-large ghost text in background -->
+      <div class="ghost-title" aria-hidden="true">VALENTINE</div>
+    </div>
+
+    <!-- final reveal section -->
+    <section class="reveal" role="region" aria-labelledby="reveal-heading">
+      <div class="card">
+        <h1 id="reveal-heading" class="message">Will you be my valentine?</h1>
+        <p class="sub">If you want special tweaks — different images, a "Yes / No" interaction, sounds, or confetti — tell me which and I’ll add it.</p>
+      </div>
+    </section>
+
+  </div>
 
 <script>
-const images = [
-    "https://picsum.photos/200?random=1",
-    "https://picsum.photos/200?random=2",
-    "https://picsum.photos/200?random=3",
-    "https://picsum.photos/200?random=4",
-    "https://picsum.photos/200?random=5"
-];
+/*
+Parallax + floating engine
+- Create floating photo elements and many 3D hearts
+- Use a requestAnimationFrame animation loop that updates each element based on:
+    - scroll position (window.scrollY)
+    - element-specific parallax speed
+    - time-based micro-animations (sine waves)
+- Mousemove parallax for small extra motion
+*/
 
-// Pre-create image elements
-images.forEach((src, index) => {
-    const img = document.createElement("img");
-    img.src = src;
-    img.className = "explosion-img";
-    img.style.left = "50%";
-    img.style.top = "50%";
-    document.body.appendChild(img);
-});
+(function(){
+  const stage = document.getElementById('stage');
+  const scene = document.getElementById('scene');
 
-function explode() {
-    const imgs = document.querySelectorAll(".explosion-img");
-    imgs.forEach((img, index) => {
-        const angle = (index / imgs.length) * 2 * Math.PI;
-        const radius = 300;
+  // ----- CONFIG -----
+  const PHOTO_SOURCES = [
+    // Replace these with your own images (relative paths or web URLs).
+    "https://picsum.photos/id/1015/800/600",
+    "https://picsum.photos/id/1016/800/600",
+    "https://picsum.photos/id/1018/800/600",
+    "https://picsum.photos/id/1025/800/600",
+    "https://picsum.photos/id/1035/800/600",
+    "https://picsum.photos/id/1043/800/600"
+  ];
 
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
+  const NUM_HEARTS = 40;          // total hearts to create
+  const HEART_SLICES = 10;        // thickness slices per heart (more = more 3D volume)
+  const NUM_PHOTOS = PHOTO_SOURCES.length;
 
-        img.style.opacity = "1";
-        img.style.transform = `translate(${x}px, ${y}px)`;
+  // sizes, multipliers
+  const viewport = { w: window.innerWidth, h: window.innerHeight };
+
+  // store objects for animation
+  const hearts = [];
+  const photos = [];
+  let mouseX = viewport.w/2, mouseY = viewport.h/2;
+
+  // create a randomly placed floating photo
+  function createPhoto(src, idx){
+    const el = document.createElement('img');
+    el.className = 'photo';
+    el.src = src;
+    el.alt = `photo ${idx+1}`;
+    // randomized layout seed
+    const seed = Math.random();
+    const left = (10 + Math.random()*80); // percent
+    const top = (10 + Math.random()*60); // percent (within spacer)
+    const depth = -200 - Math.random()*800; // more negative = farther back in z (3D space)
+    const speed = 0.2 + Math.random()*0.6; // parallax multiplier
+    const rot = -15 + Math.random()*30;
+
+    el.style.left = left + 'vw';
+    el.style.top = top + 'vh';
+    el.style.transform = `translate3d(0,0,${depth}px) rotate(${rot}deg)`;
+
+    stage.appendChild(el);
+    photos.push({ el, seed, left, top, depth, speed, rot });
+  }
+
+  // create a heart composed of stacked slices to simulate depth
+  function createHeart(i){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'heart-3d';
+    // random base position (in vw/vh), depth and motion params
+    const baseX = 5 + Math.random()*90; // percent across width
+    const baseY = 8 + Math.random()*75; // percent down within spacer
+    const baseZ = -50 - Math.random()*900; // negative z (back into scene)
+    const spin = (Math.random()*40 - 20); // base rotation offset
+    const floatSpeed = 0.5 + Math.random()*1.5;
+    const floatAmp = 10 + Math.random()*30;
+
+    // create slices
+    for(let s=0; s<HEART_SLICES; s++){
+      const slice = document.createElement('div');
+      slice.className = 'heart-slice';
+      // frontmost slice gets attribute to be slightly different (glint)
+      if(s === HEART_SLICES - 1) slice.setAttribute('data-front', 'true');
+
+      // set translateZ to build thickness; front-most larger translateZ
+      const z = (s - HEART_SLICES/2) * 3; // spacing between slices
+      slice.style.transform = `rotate(45deg) translateZ(${z}px)`;
+      wrapper.appendChild(slice);
+    }
+
+    // initial CSS placement
+    wrapper.style.left = baseX + 'vw';
+    wrapper.style.top = baseY + 'vh';
+    wrapper.style.width = '56px';
+    wrapper.style.height = '56px';
+    wrapper.style.transform = `translate3d(0,0,${baseZ}px) rotateZ(${spin}deg)`;
+
+    stage.appendChild(wrapper);
+    hearts.push({ el: wrapper, baseX, baseY, baseZ, spin, floatSpeed, floatAmp });
+  }
+
+  // populate photos and hearts
+  for(let i=0;i<NUM_PHOTOS;i++){
+    createPhoto(PHOTO_SOURCES[i], i);
+  }
+  for(let i=0;i<NUM_HEARTS;i++){
+    createHeart(i);
+  }
+
+  // also create an interesting cluster of larger images near the top
+  (function createCluster(){
+    for(let i=0;i<6;i++){
+      const src = PHOTO_SOURCES[i % PHOTO_SOURCES.length];
+      const el = document.createElement('img');
+      el.className = 'photo';
+      el.src = src;
+      el.alt = `cluster ${i+1}`;
+      const left = 30 + (i*6) + Math.random()*4;
+      const top = 20 + Math.random()*18;
+      const depth = -100 - Math.random()*300;
+      const rot = -8 + Math.random()*16;
+      el.style.left = left + 'vw';
+      el.style.top  = top + 'vh';
+      el.style.transform = `translate3d(0,0,${depth}px) rotate(${rot}deg) scale(${1 - Math.random()*0.1})`;
+      stage.appendChild(el);
+      photos.push({ el, seed: Math.random(), left, top, depth, speed: 0.25 + Math.random()*0.5, rot });
+    }
+  })();
+
+  // background layers reference (move slightly)
+  const bgLayers = Array.from(document.querySelectorAll('.bg-layer')).map(el => {
+    return { el, speed: parseFloat(el.getAttribute('data-speed') || 0.03) };
+  });
+
+  // handle mouse motion for subtle parallax
+  window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  // handle resize
+  window.addEventListener('resize', () => {
+    viewport.w = window.innerWidth;
+    viewport.h = window.innerHeight;
+  });
+
+  // performant scroll loop
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  function onScroll() {
+    lastScrollY = window.scrollY;
+    if(!ticking){
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  // main animation loop
+  let start = performance.now();
+
+  function update(now){
+    ticking = false;
+    const t = (now - start) / 1000; // seconds
+    const scrollY = lastScrollY;
+
+    // move background layers (very subtle)
+    bgLayers.forEach(layer => {
+      const y = - (scrollY * layer.speed);
+      layer.el.style.transform = `translate3d(0, ${y}px, 0)`;
     });
 
-    document.getElementById("message").style.opacity = "1";
-}
-</script>
+    // photos parallax using speed & small sine bob
+    photos.forEach((p, i) => {
+      const el = p.el;
+      // base pixel coords from vw/vh
+      const baseXpx = (p.left/100) * viewport.w;
+      const baseYpx = (p.top/100) * viewport.h;
+      const z = p.depth || -200;
+      // parallax offset from scroll
+      const par = - scrollY * (p.speed || 0.4);
+      // mouse offset (small)
+      const mx = (mouseX - viewport.w/2) * 0.02 * (1 - (Math.abs(z)/1200));
+      const my = (mouseY - viewport.h/2) * 0.015 * (1 - (Math.abs(z)/1200));
+      // micro float
+      const float = Math.sin(t* (0.6 + (p.seed||0.5))) * 6;
 
+      el.style.transform = `translate3d(${mx}px, ${par + my + float}px, ${z}px) rotate(${p.rot || 0}deg)`;
+    });
+
+    // hearts animation (float, spin, depth perspective)
+    hearts.forEach((h, i) => {
+      const el = h.el;
+      // compute base pixel positions
+      const baseXpx = (h.baseX/100) * viewport.w;
+      const baseYpx = (h.baseY/100) * viewport.h;
+
+      // y position includes a scroll-driven parallax
+      const yParallax = - scrollY * (0.12 + Math.abs(h.baseZ)/1800);
+      // bobbing
+      const bob = Math.sin(t * h.floatSpeed + i) * h.floatAmp;
+      // subtle horizontal waver
+      const wave = Math.cos(t * (0.5 + (i%7)/20)) * 18;
+
+      // mouse parallax
+      const mx = (mouseX - viewport.w/2) * 0.01 * (1 - Math.abs(h.baseZ)/1500);
+      const my = (mouseY - viewport.h/2) * 0.008 * (1 - Math.abs(h.baseZ)/1500);
+
+      // rotation slowly shifts
+      const rotZ = h.spin + Math.sin(t * 0.3 + i) * 12;
+
+      el.style.left = `calc(${h.baseX}vw)`;
+      el.style.top  = `calc(${h.baseY}vh)`;
+      el.style.transform = `translate3d(${wave + mx}px, ${yParallax + bob + my}px, ${h.baseZ}px) rotateZ(${rotZ}deg)`;
+    });
+
+    // schedule next frame
+    window.requestAnimationFrame(update);
+  }
+
+  // start the loop
+  window.requestAnimationFrame(update);
+
+  // Accessibility: if user hits keyboard 'R' key, re-randomize positions (fun dev helper)
+  window.addEventListener('keydown', (e) => {
+    if(e.key.toLowerCase() === 'r'){
+      photos.forEach(p => {
+        p.left = 5 + Math.random()*90;
+        p.top = 5 + Math.random()*70;
+        p.depth = -50 - Math.random()*900;
+        p.rot = -15 + Math.random()*30;
+        p.el.style.left = p.left + 'vw';
+        p.el.style.top = p.top + 'vh';
+      });
+      hearts.forEach(h => {
+        h.baseX = 5 + Math.random()*90;
+        h.baseY = 5 + Math.random()*75;
+        h.baseZ = -50 - Math.random()*900;
+      });
+    }
+  });
+
+})(); // end IIFE
+</script>
 </body>
 </html>
