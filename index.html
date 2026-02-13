@@ -228,11 +228,11 @@
             top: 0;
             left: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: #000000;;
             width: 0%;
             z-index: 1000;
             transition: width 0.1s ease;
-            box-shadow: 0 0 10px var(--primary-color);
+            box-shadow: 0 0 10px #000000;;
         }
 
         @media (max-width: 768px) {
@@ -243,6 +243,72 @@
 
             .scroll-text {
                 font-size: 12px;
+            }
+        }
+
+        /* 3D Hearts for Valentine Message */
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        .hearts-container.active {
+            opacity: 1;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 60px;
+            opacity: 0;
+            transform-style: preserve-3d;
+            animation: heartFloat 4s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(255, 0, 110, 0.5));
+        }
+
+        .heart::before {
+            content: "❤️";
+            display: block;
+        }
+
+        @keyframes heartFloat {
+            0%, 100% {
+                transform: translateY(0) translateZ(0) rotateY(0deg) scale(1);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-30px) translateZ(100px) rotateY(180deg) scale(1.2);
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+        }
+
+        /* Position hearts around the screen */
+        .heart:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
+        .heart:nth-child(2) { top: 25%; right: 15%; animation-delay: 0.5s; }
+        .heart:nth-child(3) { top: 60%; left: 8%; animation-delay: 1s; }
+        .heart:nth-child(4) { top: 70%; right: 12%; animation-delay: 1.5s; }
+        .heart:nth-child(5) { top: 40%; left: 20%; animation-delay: 0.8s; }
+        .heart:nth-child(6) { top: 35%; right: 25%; animation-delay: 1.2s; }
+        .heart:nth-child(7) { top: 80%; left: 25%; animation-delay: 0.3s; }
+        .heart:nth-child(8) { top: 20%; right: 30%; animation-delay: 1.2s; }
+        .heart:nth-child(9) { top: 40%; right: 40%; animation-delay: 0.8s; }
+        .heart:nth-child(10) { top: 45%; left: 15%; animation-delay: 1.4s; }
+
+        @media (max-width: 768px) {
+            .heart {
+                font-size: 40px;
             }
         }
     </style>
@@ -259,6 +325,19 @@
     </div>
 
     <div class="particles" id="particles"></div>
+
+    <div class="hearts-container" id="heartsContainer">
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+        <div class="heart"></div>
+    </div>
 
     <div class="scroll-container">
         <div class="number-section" data-section="5">
@@ -291,6 +370,7 @@
         const progressBar = document.getElementById('progressBar');
         const scrollIndicator = document.getElementById('scrollIndicator');
         const particlesContainer = document.getElementById('particles');
+        const heartsContainer = document.getElementById('heartsContainer');
 
         let currentSection = 0;
         let isTransitioning = false;
@@ -381,6 +461,13 @@
                 bg.classList.remove('active');
             });
             backgrounds[newSection].classList.add('active');
+
+            // Show/hide hearts on valentine message (section 4 = last section with "Will you be my valentine?")
+            if (newSection === 4) {
+                heartsContainer.classList.add('active');
+            } else {
+                heartsContainer.classList.remove('active');
+            }
 
             // Animate the new section in
             setTimeout(() => {
