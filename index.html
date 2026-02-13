@@ -2,91 +2,106 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Valentine Scroll 💖</title>
+<title>Be My Valentine 💖</title>
 <style>
     body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(#ffdde1, #ee9ca7);
-        overflow-x: hidden;
-    }
-
-    section {
         height: 100vh;
-        position: relative;
+        background: linear-gradient(135deg, #ff9a9e, #fad0c4);
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 40px;
-        color: white;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
     }
 
-    .floating-img, .heart {
-        position: absolute;
-        width: 150px;
-        height: 150px;
-        object-fit: cover;
-        border-radius: 15px;
-        animation: float 6s infinite ease-in-out;
+    .heart-container {
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        z-index: 10;
     }
 
     .heart {
-        font-size: 80px;
-        width: auto;
-        height: auto;
-        animation: float 8s infinite ease-in-out;
+        font-size: 100px;
+        animation: pulse 1.5s infinite;
+        transition: transform 0.3s ease;
     }
 
-    @keyframes float {
-        0% { transform: translateY(0px) rotateY(0deg); }
-        50% { transform: translateY(-30px) rotateY(180deg); }
-        100% { transform: translateY(0px) rotateY(360deg); }
+    .heart:hover {
+        transform: scale(1.1);
     }
 
-    .final {
-        font-size: 50px;
-        text-align: center;
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    .explosion-img {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 15px;
+        opacity: 0;
+        transition: all 1s ease-out;
+    }
+
+    .message {
+        position: absolute;
+        bottom: 10%;
+        font-size: 40px;
+        color: white;
+        opacity: 0;
+        transition: opacity 2s ease;
     }
 </style>
 </head>
 <body>
 
-<section id="floating-section"></section>
+<div class="heart-container" onclick="explode()">
+    <div class="heart">❤️</div>
+    <div>Click Here</div>
+</div>
 
-<section class="final">
+<div class="message" id="message">
     Will You Be My Valentine? 💘
-</section>
+</div>
 
 <script>
 const images = [
-    "https://picsum.photos/200?random=11",
-    "https://picsum.photos/200?random=12",
-    "https://picsum.photos/200?random=13",
-    "https://picsum.photos/200?random=14",
+    "https://picsum.photos/200?random=1",
+    "https://picsum.photos/200?random=2",
+    "https://picsum.photos/200?random=3",
+    "https://picsum.photos/200?random=4",
+    "https://picsum.photos/200?random=5"
 ];
 
-const section = document.getElementById("floating-section");
-
-// Add floating images
-images.forEach((src, i) => {
+// Pre-create image elements
+images.forEach((src, index) => {
     const img = document.createElement("img");
     img.src = src;
-    img.className = "floating-img";
-    img.style.top = Math.random() * 80 + "%";
-    img.style.left = Math.random() * 80 + "%";
-    img.style.animationDelay = i + "s";
-    section.appendChild(img);
+    img.className = "explosion-img";
+    img.style.left = "50%";
+    img.style.top = "50%";
+    document.body.appendChild(img);
 });
 
-// Add floating hearts
-for (let i = 0; i < 5; i++) {
-    const heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "❤️";
-    heart.style.top = Math.random() * 80 + "%";
-    heart.style.left = Math.random() * 80 + "%";
-    heart.style.animationDelay = i + "s";
-    section.appendChild(heart);
+function explode() {
+    const imgs = document.querySelectorAll(".explosion-img");
+    imgs.forEach((img, index) => {
+        const angle = (index / imgs.length) * 2 * Math.PI;
+        const radius = 300;
+
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+
+        img.style.opacity = "1";
+        img.style.transform = `translate(${x}px, ${y}px)`;
+    });
+
+    document.getElementById("message").style.opacity = "1";
 }
 </script>
 
