@@ -1,106 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Valentine Surprise</title>
-
+<title>Valentine Scroll 💖</title>
 <style>
-body {
-  margin: 0;
-  height: 100vh;
-  background: #ffdde1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-}
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(#ffdde1, #ee9ca7);
+        overflow-x: hidden;
+    }
 
-#heart {
-  font-size: 80px;
-  cursor: pointer;
-  text-align: center;
-  transition: transform 0.2s ease;
-  user-select: none;
-}
+    section {
+        height: 100vh;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 40px;
+        color: white;
+    }
 
-#heart:hover {
-  transform: scale(1.1);
-}
+    .floating-img, .heart {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 15px;
+        animation: float 6s infinite ease-in-out;
+    }
 
-#message {
-  position: absolute;
-  font-size: 60px;
-  color: #e60073;
-  opacity: 0;
-  transition: opacity 1.5s ease;
-  text-align: center;
-}
+    .heart {
+        font-size: 80px;
+        width: auto;
+        height: auto;
+        animation: float 8s infinite ease-in-out;
+    }
 
-.photo {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 15px;
-  transition: transform 1.5s ease, opacity 1.5s ease;
-}
+    @keyframes float {
+        0% { transform: translateY(0px) rotateY(0deg); }
+        50% { transform: translateY(-30px) rotateY(180deg); }
+        100% { transform: translateY(0px) rotateY(360deg); }
+    }
+
+    .final {
+        font-size: 50px;
+        text-align: center;
+    }
 </style>
 </head>
-
 <body>
 
-<div id="heart">
-  ❤️<br>
-  <span style="font-size:20px;">Click Here</span>
-</div>
+<section id="floating-section"></section>
 
-<div id="message">Will you be my Valentine? 💘</div>
+<section class="final">
+    Will You Be My Valentine? 💘
+</section>
 
 <script>
-const heart = document.getElementById("heart");
-const message = document.getElementById("message");
-
-// 🔥 Replace these with your own image URLs
 const images = [
-  "https://via.placeholder.com/200",
-  "https://via.placeholder.com/200/ff69b4",
-  "https://via.placeholder.com/200/ff1493",
-  "https://via.placeholder.com/200/fc8eac",
-  "https://via.placeholder.com/200/f08080"
+    "https://picsum.photos/200?random=11",
+    "https://picsum.photos/200?random=12",
+    "https://picsum.photos/200?random=13",
+    "https://picsum.photos/200?random=14",
 ];
 
-heart.addEventListener("click", () => {
-  heart.style.display = "none";
+const section = document.getElementById("floating-section");
 
-  images.forEach((src) => {
+// Add floating images
+images.forEach((src, i) => {
     const img = document.createElement("img");
     img.src = src;
-    img.classList.add("photo");
-
-    // Start in center
-    img.style.left = "50%";
-    img.style.top = "50%";
-    img.style.transform = "translate(-50%, -50%) scale(0)";
-
-    document.body.appendChild(img);
-
-    // Random explosion direction
-    const angle = Math.random() * 2 * Math.PI;
-    const distance = 300 + Math.random() * 200;
-    const x = Math.cos(angle) * distance;
-    const y = Math.sin(angle) * distance;
-
-    setTimeout(() => {
-      img.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`;
-    }, 100);
-  });
-
-  setTimeout(() => {
-    message.style.opacity = 1;
-  }, 1200);
+    img.className = "floating-img";
+    img.style.top = Math.random() * 80 + "%";
+    img.style.left = Math.random() * 80 + "%";
+    img.style.animationDelay = i + "s";
+    section.appendChild(img);
 });
+
+// Add floating hearts
+for (let i = 0; i < 5; i++) {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤️";
+    heart.style.top = Math.random() * 80 + "%";
+    heart.style.left = Math.random() * 80 + "%";
+    heart.style.animationDelay = i + "s";
+    section.appendChild(heart);
+}
 </script>
 
 </body>
