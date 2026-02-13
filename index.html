@@ -2,24 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Website</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <title>Scroll Countdown</title>
+    <!-- GSAP Libraries -->
+    <script src="https://cdnjs.cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com"></script>
+    
+    <style>
+        body { margin: 0; background: #0f0f0f; font-family: sans-serif; color: white; overflow-x: hidden; }
+        
+        .spacer { height: 50vh; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0.5; }
+
+        /* The main container that stays fixed while scrolling */
+        .countdown-container {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #1a1a1a;
+        }
+
+        .number {
+            position: absolute;
+            font-size: clamp(5rem, 40vw, 20rem); /* Dynamic size based on screen width */
+            font-weight: 800;
+            line-height: 1;
+            will-change: transform, opacity;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="spacer"></div>
+    <div class="spacer">Scroll Down to Start Countdown</div>
 
-    <div class="number-section">
-        <div class="number">5</div>
-        <div class="number">4</div>
-        <div class="number">3</div>
-        <div class="number">2</div>
-        <div class="number">1</div>
+    <div class="countdown-container" id="pin-section">
+        <div class="number" id="n5">5</div>
+        <div class="number" id="n4">4</div>
+        <div class="number" id="n3">3</div>
+        <div class="number" id="n2">2</div>
+        <div class="number" id="n1">1</div>
     </div>
 
-    <div class="spacer"></div>
+    <div class="spacer">Countdown Complete</div>
 
-    <script src="script.js"></script>
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Create a timeline that links to scroll progress
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#pin-section",
+                start: "top top",      // Start when top of container hits top of viewport
+                end: "+=4000",         // Duration of scroll (how much you have to scroll)
+                scrub: 1,              // Smoothly links animation to scrollbar
+                pin: true,             // Keeps the container stuck in place
+                markers: false         // Set to true to see start/end lines for debugging
+            }
+        });
+
+        // Set initial positions: Number 5 in middle, others off-screen to the left
+        gsap.set(".number:not(#n5)", { x: "-150vw", opacity: 0 });
+
+        // Animation Sequence
+        tl
+            // 5 Slides Right (Off)
+            .to("#n5", { x: "150vw", opacity: 0, duration: 1 })
+            
+            // 4 Slides In (Middle), Holds, then Slides Right (Off)
+            .to("#n4", { x: "0%", opacity: 1, duration: 1 })
+            .to("#n4", { x: "0%", duration: 0.5 }) // Brief pause in middle
+            .to("#n4", { x: "150vw", opacity: 0, duration: 1 })
+
+            // 3 Slides In, Holds, then Slides Right
+            .to("#n3", { x: "0%", opacity: 1, duration: 1 })
+            .to("#n3", { x: "0%", duration: 0.5 })
+            .to("#n3", { x: "150vw", opacity: 0, duration: 1 })
+
+            // 2 Slides In, Holds, then Slides Right
+            .to("#n2", { x: "0%", opacity: 1, duration: 1 })
+            .to("#n2", { x: "0%", duration: 0.5 })
+            .to("#n2", { x: "150vw", opacity: 0, duration: 1 })
+
+            // 1 Slides In and STAYS
+            .to("#n1", { x: "0%", opacity: 1, duration: 1 });
+
+    </script>
 </body>
 </html>
