@@ -3,92 +3,434 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scroll Countdown</title>
-    <!-- GSAP Libraries -->
-    <script src="https://cdnjs.cloudflare.com"></script>
-    <script src="https://cdnjs.cloudflare.com"></script>
-    
+    <title>Countdown Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background: #0f0f0f; font-family: sans-serif; color: white; overflow-x: hidden; }
-        
-        .spacer { height: 50vh; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0.5; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        /* The main container that stays fixed while scrolling */
-        .countdown-container {
-            position: relative;
-            height: 100vh;
+        :root {
+            --primary-color: #00ff88;
+            --secondary-color: #ff0088;
+            --bg-dark: #0a0a0a;
+        }
+
+        body {
+            font-family: 'Bebas Neue', sans-serif;
+            overflow-x: hidden;
+            background: var(--bg-dark);
+            color: white;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100vh;
+            z-index: -1;
             overflow: hidden;
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .background-image.active {
+            opacity: 1;
+        }
+
+        /* Default backgrounds with vibrant gradients */
+        .bg-5 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-4 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .bg-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .bg-2 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .bg-1 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        /* Dark overlay for better text contrast */
+        .background-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .scroll-container {
+            position: relative;
+            height: 600vh; /* 6 sections total */
+        }
+
+        .number-section {
+            height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            background: #1a1a1a;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            overflow: hidden;
         }
 
         .number {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(40px, 8vw, 120px);
+            font-weight: 400;
+            color: white;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.5),
+                0 0 40px rgba(0, 255, 136, 0.3),
+                0 10px 30px rgba(0, 0, 0, 0.5);
             position: absolute;
-            font-size: clamp(5rem, 40vw, 20rem); /* Dynamic size based on screen width */
-            font-weight: 800;
-            line-height: 1;
-            will-change: transform, opacity;
+            transform: translateX(-200%);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            letter-spacing: 0.05em;
+            z-index: 10;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .number.slide-in {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .number.slide-out {
+            transform: translateX(200%);
+            opacity: 0;
+        }
+
+        .number.stay {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+
+
+        /* Particle effects container */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .scroll-indicator.hidden {
+            opacity: 0;
+        }
+
+        .scroll-text {
+            font-size: 14px;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .scroll-arrow {
+            width: 30px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 25px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .scroll-arrow::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll-down 2s ease-in-out infinite;
+        }
+
+        @keyframes scroll-down {
+            0%, 100% {
+                top: 10px;
+                opacity: 0;
+            }
+            50% {
+                top: 25px;
+                opacity: 1;
+            }
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            z-index: 1000;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .number {
+                font-size: clamp(30px, 10vw, 80px);
+                padding: 0 20px;
+            }
+
+            .scroll-text {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="progress-bar" id="progressBar"></div>
 
-    <div class="spacer">Scroll Down to Start Countdown</div>
-
-    <div class="countdown-container" id="pin-section">
-        <div class="number" id="n5">5</div>
-        <div class="number" id="n4">4</div>
-        <div class="number" id="n3">3</div>
-        <div class="number" id="n2">2</div>
-        <div class="number" id="n1">1</div>
+    <div class="background-container">
+        <div class="background-image bg-5" data-number="5"></div>
+        <div class="background-image bg-4" data-number="4"></div>
+        <div class="background-image bg-3" data-number="3"></div>
+        <div class="background-image bg-2" data-number="2"></div>
+        <div class="background-image bg-1" data-number="1"></div>
     </div>
 
-    <div class="spacer">Countdown Complete</div>
+    <div class="particles" id="particles"></div>
+
+    <div class="scroll-container">
+        <div class="number-section" data-section="5">
+            <div class="number" data-number="5">Hi my beautiful girl!</div>
+        </div>
+        <div class="number-section" data-section="4">
+            <div class="number" data-number="4">You found the website!</div>
+        </div>
+        <div class="number-section" data-section="3">
+            <div class="number" data-number="3">I love you</div>
+        </div>
+        <div class="number-section" data-section="2">
+            <div class="number" data-number="2">You are cool</div>
+        </div>
+        <div class="number-section" data-section="1">
+            <div class="number" data-number="1">Will you be my valentine?</div>
+        </div>
+    </div>
+
+    <div class="scroll-indicator" id="scrollIndicator">
+        <div class="scroll-text">SCROLL</div>
+        <div class="scroll-arrow"></div>
+    </div>
 
     <script>
-        gsap.registerPlugin(ScrollTrigger);
+        // Configuration
+        const sections = document.querySelectorAll('.number-section');
+        const numbers = document.querySelectorAll('.number');
+        const backgrounds = document.querySelectorAll('.background-image');
+        const progressBar = document.getElementById('progressBar');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        const particlesContainer = document.getElementById('particles');
 
-        // Create a timeline that links to scroll progress
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: "#pin-section",
-                start: "top top",      // Start when top of container hits top of viewport
-                end: "+=4000",         // Duration of scroll (how much you have to scroll)
-                scrub: 1,              // Smoothly links animation to scrollbar
-                pin: true,             // Keeps the container stuck in place
-                markers: false         // Set to true to see start/end lines for debugging
-            }
+        let currentSection = 0;
+        let isTransitioning = false;
+
+        // Initialize first number
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                numbers[0].classList.add('slide-in');
+                backgrounds[0].classList.add('active');
+                createParticles();
+            }, 300);
         });
 
-        // Set initial positions: Number 5 in middle, others off-screen to the left
-        gsap.set(".number:not(#n5)", { x: "-150vw", opacity: 0 });
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 3 + 's';
+                particle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
 
-        // Animation Sequence
-        tl
-            // 5 Slides Right (Off)
-            .to("#n5", { x: "150vw", opacity: 0, duration: 1 })
+        // Update particles animation
+        function animateParticles() {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                particle.style.opacity = '1';
+                setTimeout(() => {
+                    particle.style.opacity = '0';
+                }, 300);
+            });
+        }
+
+        // Scroll handler
+        function handleScroll() {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = window.scrollY;
+            const progress = (scrolled / scrollHeight) * 100;
             
-            // 4 Slides In (Middle), Holds, then Slides Right (Off)
-            .to("#n4", { x: "0%", opacity: 1, duration: 1 })
-            .to("#n4", { x: "0%", duration: 0.5 }) // Brief pause in middle
-            .to("#n4", { x: "150vw", opacity: 0, duration: 1 })
+            // Update progress bar
+            progressBar.style.width = progress + '%';
 
-            // 3 Slides In, Holds, then Slides Right
-            .to("#n3", { x: "0%", opacity: 1, duration: 1 })
-            .to("#n3", { x: "0%", duration: 0.5 })
-            .to("#n3", { x: "150vw", opacity: 0, duration: 1 })
+            // Hide scroll indicator after first scroll
+            if (scrolled > 50) {
+                scrollIndicator.classList.add('hidden');
+            } else {
+                scrollIndicator.classList.remove('hidden');
+            }
 
-            // 2 Slides In, Holds, then Slides Right
-            .to("#n2", { x: "0%", opacity: 1, duration: 1 })
-            .to("#n2", { x: "0%", duration: 0.5 })
-            .to("#n2", { x: "150vw", opacity: 0, duration: 1 })
+            // Calculate which section should be active
+            const sectionHeight = window.innerHeight;
+            const newSection = Math.min(Math.floor(scrolled / sectionHeight), 4);
 
-            // 1 Slides In and STAYS
-            .to("#n1", { x: "0%", opacity: 1, duration: 1 });
+            if (newSection !== currentSection && !isTransitioning) {
+                isTransitioning = true;
+                const direction = newSection > currentSection ? 'forward' : 'backward';
+                transitionToSection(newSection, direction);
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 800);
+            }
+        }
 
+        // Transition between sections
+        function transitionToSection(newSection, direction) {
+            // Reset all numbers to default state first
+            numbers.forEach((num, index) => {
+                if (index !== newSection) {
+                    num.classList.remove('slide-in', 'slide-out', 'stay');
+                    if (index < newSection) {
+                        // Numbers before current should be off to the right
+                        num.style.transform = 'translateX(200%)';
+                        num.style.opacity = '0';
+                    } else {
+                        // Numbers after current should be off to the left
+                        num.style.transform = 'translateX(-200%)';
+                        num.style.opacity = '0';
+                    }
+                }
+            });
+
+            // Update backgrounds
+            backgrounds.forEach((bg, index) => {
+                bg.classList.remove('active');
+            });
+            backgrounds[newSection].classList.add('active');
+
+            // Animate the new section in
+            setTimeout(() => {
+                const currentNumber = numbers[newSection];
+                
+                // Reset inline styles
+                currentNumber.style.transform = '';
+                currentNumber.style.opacity = '';
+                
+                // Remove all classes and add slide-in
+                currentNumber.classList.remove('slide-out', 'stay');
+                currentNumber.classList.add('slide-in');
+                
+                // Keep number 1 in place at the end
+                if (newSection === 4) {
+                    currentNumber.classList.add('stay');
+                }
+                
+                animateParticles();
+                currentSection = newSection;
+            }, 50);
+        }
+
+        // Throttle scroll events
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) {
+                window.cancelAnimationFrame(scrollTimeout);
+            }
+            scrollTimeout = window.requestAnimationFrame(() => {
+                handleScroll();
+            });
+        });
+
+        // Handle smooth scrolling with keyboard
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                window.scrollBy({
+                    top: window.innerHeight,
+                    behavior: 'smooth'
+                });
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                window.scrollBy({
+                    top: -window.innerHeight,
+                    behavior: 'smooth'
+                });
+            }
+        });
     </script>
 </body>
 </html>
